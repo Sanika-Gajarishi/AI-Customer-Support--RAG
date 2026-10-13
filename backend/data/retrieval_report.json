@@ -1,0 +1,73 @@
+{
+  "k": 3,
+  "hit_rate_at_k": 1.0,
+  "mean_reciprocal_rank": 0.9166666666666666,
+  "results": [
+    {
+      "question": "Can I return a product after 20 days?",
+      "expected_source": "return_policy.txt",
+      "retrieved_sources": [
+        "return_policy.txt",
+        "customer_faq.txt",
+        "refund_policy.txt"
+      ],
+      "rank": 1,
+      "hit_at_k": true
+    },
+    {
+      "question": "How long does an approved refund take?",
+      "expected_source": "refund_policy.txt",
+      "retrieved_sources": [
+        "refund_policy.txt",
+        "return_policy.txt",
+        "customer_faq.txt"
+      ],
+      "rank": 1,
+      "hit_at_k": true
+    },
+    {
+      "question": "Can I cancel an order after it has shipped?",
+      "expected_source": "cancellation_policy.txt",
+      "retrieved_sources": [
+        "cancellation_policy.txt",
+        "customer_faq.txt",
+        "return_policy.txt"
+      ],
+      "rank": 1,
+      "hit_at_k": true
+    },
+    {
+      "question": "Does ShopEase offer free international shipping?",
+      "expected_source": "shipping_policy.txt",
+      "retrieved_sources": [
+        "customer_faq.txt",
+        "shipping_policy.txt",
+        "cancellation_policy.txt"
+      ],
+      "rank": 2,
+      "hit_at_k": true
+    },
+    {
+      "question": "What warranty coverage is available for a product?",
+      "expected_source": "warranty_policy.txt",
+      "retrieved_sources": [
+        "warranty_policy.txt",
+        "return_policy.txt",
+        "customer_faq.txt"
+      ],
+      "rank": 1,
+      "hit_at_k": true
+    },
+    {
+      "question": "How can I contact ShopEase customer support?",
+      "expected_source": "customer_faq.txt",
+      "retrieved_sources": [
+        "customer_faq.txt",
+        "warranty_policy.txt",
+        "cancellation_policy.txt"
+      ],
+      "rank": 1,
+      "hit_at_k": true
+    }
+  ]
+}
