@@ -2,7 +2,6 @@
 from app.services.embedding_service import create_embeddings, load_vectorstore
 from app.services.llm_service import generate_answer
 
-
 def answer_question(
     question: str,
     chat_history: list[dict] | None = None,
