@@ -5,3 +5,5 @@ Customers should check the warranty information supplied with their product.
 Damage caused by misuse is not automatically covered by warranty.
 Customers should retain proof of purchase when requesting warranty assistance.
 ShopEase support can help customers understand the next steps for a warranty claim.
+
+
