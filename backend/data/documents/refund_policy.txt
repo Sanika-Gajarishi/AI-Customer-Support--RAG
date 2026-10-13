@@ -5,3 +5,5 @@ Approved refunds are processed within 5 to 7 business days.
 Refunds are issued to the original payment method whenever supported.
 The time taken for funds to appear may depend on the payment provider.
 If a refund has not arrived after the processing period, contact support with the order number.
+
+
