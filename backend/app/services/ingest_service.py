@@ -20,6 +20,5 @@ def main():
     print("FAISS index created successfully.")
     print(f"Indexed chunks: {vectorstore.index.ntotal}")
 
-
 if __name__ == "__main__":
     main()
