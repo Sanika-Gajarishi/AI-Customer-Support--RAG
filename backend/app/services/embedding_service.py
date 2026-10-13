@@ -40,7 +40,6 @@ def _load_vectorstore_cached() -> FAISS:
         allow_dangerous_deserialization=True,
     )
 
-
 def load_vectorstore(
     embeddings: HuggingFaceEmbeddings | None = None,
 ) -> FAISS:
