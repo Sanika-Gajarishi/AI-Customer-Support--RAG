@@ -23,7 +23,6 @@ def create_gemini_client() -> genai.Client:
 
     return genai.Client(api_key=api_key)
 
-
 def generate_answer(prompt: str) -> str:
     """Generate an answer using Gemini."""
     client = create_gemini_client()
