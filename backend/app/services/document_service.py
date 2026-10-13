@@ -52,6 +52,7 @@ def load_documents() -> list[Document]:
     return documents
 
 
+
 def split_documents(
     documents: list[Document],
     chunk_size: int = 800,
