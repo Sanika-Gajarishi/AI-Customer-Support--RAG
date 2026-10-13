@@ -17,3 +17,5 @@ A: Shipped orders cannot be cancelled through the standard cancellation process.
 
 Q: Is international shipping free?
 A: The policies do not specify whether international shipping is free. This must be confirmed by support.
+
+
