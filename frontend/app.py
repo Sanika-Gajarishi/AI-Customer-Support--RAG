@@ -6,6 +6,121 @@ API_BASE_URL = "http://127.0.0.1:8000/api"
 CHAT_URL = f"{API_BASE_URL}/chat"
 FEEDBACK_URL = f"{API_BASE_URL}/feedback"
 
+
+AUTH_URL = f"{API_BASE_URL}/auth"
+
+if "access_token" not in st.session_state:
+    st.session_state.access_token = None
+
+if "current_user" not in st.session_state:
+    st.session_state.current_user = None
+
+
+def auth_headers():
+    token = st.session_state.get("access_token")
+    if not token:
+        return {}
+    return {"Authorization": f"Bearer {token}"}
+
+
+if not st.session_state.access_token:
+    st.title("💬 ShopEase AI Support")
+    st.subheader("Welcome")
+    st.caption("Log in or create an account to continue.")
+
+    auth_mode = st.radio(
+        "Choose an option",
+        ["Login", "Register"],
+        horizontal=True,
+    )
+
+    with st.form("authentication_form"):
+        email = st.text_input("Email").strip().lower()
+        password = st.text_input(
+            "Password",
+            type="password",
+        )
+
+        if auth_mode == "Register":
+            st.caption("Use a password between 8 and 128 characters.")
+
+        submitted = st.form_submit_button(
+            auth_mode,
+            use_container_width=True,
+        )
+
+    if submitted:
+        if not email or not password:
+            st.error("Enter your email and password.")
+        else:
+            try:
+                if auth_mode == "Register":
+                    response = requests.post(
+                        f"{AUTH_URL}/register",
+                        json={
+                            "email": email,
+                            "password": password,
+                        },
+                        timeout=15,
+                    )
+
+                    if response.status_code == 201:
+                        st.success(
+                            "Account created! Switch to Login to continue."
+                        )
+                    else:
+                        st.error(
+                            response.json().get(
+                                "detail",
+                                "Registration failed.",
+                            )
+                        )
+
+                else:
+                    response = requests.post(
+                        f"{AUTH_URL}/login",
+                        json={
+                            "email": email,
+                            "password": password,
+                        },
+                        timeout=15,
+                    )
+
+                    if response.ok:
+                        token_data = response.json()
+                        token = token_data["access_token"]
+
+                        profile_response = requests.get(
+                            f"{AUTH_URL}/me",
+                            headers={
+                                "Authorization": f"Bearer {token}"
+                            },
+                            timeout=15,
+                        )
+                        profile_response.raise_for_status()
+
+                        st.session_state.access_token = token
+                        st.session_state.current_user = (
+                            profile_response.json()
+                        )
+                        st.session_state.conversation_id = None
+                        st.session_state.messages = []
+                        st.rerun()
+                    else:
+                        st.error(
+                            response.json().get(
+                                "detail",
+                                "Login failed.",
+                            )
+                        )
+
+            except requests.exceptions.RequestException:
+                st.error(
+                    "Cannot reach the backend. Check that FastAPI is running."
+                )
+
+    st.stop()
+
 st.set_page_config(
     page_title="ShopEase AI Support",
     page_icon="💬",
@@ -38,6 +153,23 @@ if "messages" not in st.session_state:
 
 
 with st.sidebar:
+    
+    user = st.session_state.current_user
+
+    st.caption(f"Signed in as: {user['email']}")
+
+    if user.get("is_admin"):
+        st.success("Administrator account")
+
+    if st.button("Log out", use_container_width=True):
+        st.session_state.access_token = None
+        st.session_state.current_user = None
+        st.session_state.conversation_id = None
+        st.session_state.messages = []
+        st.rerun()
+
+    st.divider()
+
     st.subheader("Conversation")
 
     if st.session_state.conversation_id:
@@ -104,6 +236,7 @@ for message in st.session_state.messages:
                                 response = requests.post(
                                     FEEDBACK_URL,
                                     json=payload,
+                                    headers=auth_headers(),
                                     timeout=15,
                                 )
                                 response.raise_for_status()
@@ -148,6 +281,7 @@ if prompt:
                 response = requests.post(
                     CHAT_URL,
                     json=payload,
+                    headers=auth_headers(),
                     timeout=120,
                 )
                 response.raise_for_status()
