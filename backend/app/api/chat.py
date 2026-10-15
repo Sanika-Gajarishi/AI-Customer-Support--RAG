@@ -8,7 +8,8 @@ from sqlalchemy import select
 from sqlalchemy.orm import Session
 
 from app.database import get_db
-from app.models import Conversation, Message
+from app.models import Conversation, Message, User
+from app.security import get_current_user
 from app.services.rag_service import answer_question
 
 logger = logging.getLogger(__name__)
@@ -32,6 +33,7 @@ class ChatResponse(BaseModel):
 def chat(
     request: ChatRequest,
     db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_user),
 ):
     message_text = request.message.strip()
 
@@ -42,30 +44,37 @@ def chat(
         )
 
     try:
-        # 1. Find the existing conversation or create a new one.
+        # 1. Find the user's conversation or create a new one.
         if request.conversation_id:
             conversation = db.scalar(
                 select(Conversation).where(
-                    Conversation.session_id == request.conversation_id
+                    Conversation.session_id == request.conversation_id,
+                    Conversation.user_id == current_user.id,
                 )
             )
 
+            # Do not reveal whether another user's conversation exists.
             if conversation is None:
                 raise HTTPException(
                     status_code=404,
                     detail="Conversation not found.",
                 )
+
         else:
-            conversation = Conversation(session_id=str(uuid4()))
+            conversation = Conversation(
+                session_id=str(uuid4()),
+                user_id=current_user.id,
+            )
             db.add(conversation)
             db.flush()
 
-        # 2. Load the six most recent messages BEFORE saving the
-        # current question. This prevents the current question from
-        # appearing twice in the conversation history.
+        # 2. Load the six most recent messages before saving
+        # the current question.
         history_rows = db.scalars(
             select(Message)
-            .where(Message.conversation_id == conversation.id)
+            .where(
+                Message.conversation_id == conversation.id
+            )
             .order_by(Message.id.desc())
             .limit(6)
         ).all()
@@ -78,7 +87,7 @@ def chat(
             for message in reversed(history_rows)
         ]
 
-        # 3. Save the current customer's question.
+        # 3. Save the customer's question.
         user_message = Message(
             conversation_id=conversation.id,
             role="user",
@@ -87,13 +96,13 @@ def chat(
         db.add(user_message)
         db.flush()
 
-        # 4. Generate an answer using RAG and conversation history.
+        # 4. Generate the answer using RAG and conversation history.
         result = answer_question(
             message_text,
             chat_history=chat_history,
         )
 
-        # 5. Save the assistant's answer.
+        # 5. Save the assistant's response.
         assistant_message = Message(
             conversation_id=conversation.id,
             role="assistant",
@@ -102,11 +111,10 @@ def chat(
         db.add(assistant_message)
         db.flush()
 
-        # 6. Commit both messages to PostgreSQL.
+        # 6. Commit the conversation messages.
         db.commit()
 
-        # 7. Return the answer, sources, conversation ID,
-        # and assistant message ID for the feedback feature.
+        # 7. Return the response expected by the frontend.
         return ChatResponse(
             answer=result["answer"],
             sources=result["sources"],
