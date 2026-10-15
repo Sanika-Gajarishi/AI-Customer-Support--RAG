@@ -1,4 +1,4 @@
-
+RETRIEVAL_DISTANCE_THRESHOLD = 1.5
 from app.services.embedding_service import create_embeddings, load_vectorstore
 from app.services.llm_service import generate_answer
 
@@ -19,6 +19,28 @@ def answer_question(
         question,
         k=3,
     )
+
+    
+    # Apply the provisional cutoff to new conversations only.
+    # Until query rewriting is implemented, avoid rejecting follow-ups
+    # solely because their standalone wording is vague.
+    if not chat_history:
+        if (
+            not retrieved_documents
+            or float(retrieved_documents[0][1])
+            > RETRIEVAL_DISTANCE_THRESHOLD
+        ):
+            return {
+                "answer": (
+                    "I can help with ShopEase customer-support questions, "
+                    "but I couldn't find sufficiently relevant information "
+                    "in the available policies to answer that question. "
+                    "Please ask about ShopEase orders, returns, refunds, "
+                    "shipping, cancellations, or warranties."
+                ),
+                "sources": [],
+            }
+
 
     context_parts = []
     sources = []
