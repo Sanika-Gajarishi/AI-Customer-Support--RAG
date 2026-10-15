@@ -112,11 +112,19 @@ for message in st.session_state.messages:
                                 st.success("Thank you for your feedback!")
                                 st.rerun()
 
-                            except requests.exceptions.RequestException:
+                            except requests.exceptions.HTTPError as exc:
+                                detail = (
+                                    exc.response.text
+                                    if exc.response is not None
+                                    else str(exc)
+                                )
                                 st.error(
-                                    "Could not save feedback. "
-                                    "Check that the backend and database "
-                                    "are running, then try again."
+                                    f"Feedback API error: {detail}"
+                                )
+
+                            except requests.exceptions.RequestException as exc:
+                                st.error(
+                                    f"Could not connect to feedback API: {exc}"
                                 )
 
 
@@ -178,11 +186,19 @@ if prompt:
 
                 st.rerun()
 
-            except requests.exceptions.RequestException:
-                st.error(
-                    "Unable to contact the backend. "
-                    "Check FastAPI, PostgreSQL, and your Gemini configuration."
+            except requests.exceptions.HTTPError as exc:
+                response = exc.response
+                detail = (
+                    response.text
+                    if response is not None
+                    else str(exc)
                 )
+                st.error(f"Backend HTTP error: {detail}")
+
+            except requests.exceptions.RequestException as exc:
+                st.error(f"Connection error: {exc}")
+
+                    
 
             except (KeyError, ValueError):
                 st.error(
