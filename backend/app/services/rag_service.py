@@ -1,6 +1,25 @@
-RETRIEVAL_DISTANCE_THRESHOLD = 1.5
-from app.services.embedding_service import create_embeddings, load_vectorstore
+
+import logging
+
+from app.services.embedding_service import (
+    create_embeddings,
+    load_vectorstore,
+)
 from app.services.llm_service import generate_answer
+
+logger = logging.getLogger(__name__)
+
+RETRIEVAL_DISTANCE_THRESHOLD = 1.5
+RETRIEVAL_TOP_K = 3
+
+OUT_OF_SCOPE_ANSWER = (
+    "I can help with ShopEase customer-support questions, "
+    "but I couldn't find sufficiently relevant information "
+    "in the available policies to answer that question. "
+    "Please ask about ShopEase orders, returns, refunds, "
+    "shipping, cancellations, or warranties."
+)
+
 
 def answer_question(
     question: str,
@@ -14,39 +33,32 @@ def answer_question(
     embeddings = create_embeddings()
     vectorstore = load_vectorstore(embeddings)
 
-    # Retrieve policy evidence for the current question.
     retrieved_documents = vectorstore.similarity_search_with_score(
         question,
-        k=3,
+        k=RETRIEVAL_TOP_K,
     )
 
-    
-    # Apply the provisional cutoff to new conversations only.
-    # Until query rewriting is implemented, avoid rejecting follow-ups
-    # solely because their standalone wording is vague.
+    # Reject poorly matched questions in new conversations.
     if not chat_history:
         if (
             not retrieved_documents
             or float(retrieved_documents[0][1])
             > RETRIEVAL_DISTANCE_THRESHOLD
         ):
+            logger.info(
+                "Question rejected by retrieval threshold."
+            )
             return {
-                "answer": (
-                    "I can help with ShopEase customer-support questions, "
-                    "but I couldn't find sufficiently relevant information "
-                    "in the available policies to answer that question. "
-                    "Please ask about ShopEase orders, returns, refunds, "
-                    "shipping, cancellations, or warranties."
-                ),
+                "answer": OUT_OF_SCOPE_ANSWER,
                 "sources": [],
             }
-
 
     context_parts = []
     sources = []
 
     for document, score in retrieved_documents:
         source = document.metadata.get("source", "Unknown source")
+
         context_parts.append(
             f"Source: {source}\n"
             f"Policy content:\n{document.page_content}"
@@ -57,7 +69,6 @@ def answer_question(
 
     context = "\n\n---\n\n".join(context_parts)
 
-    # Include recent conversation for interpreting follow-up questions.
     history_parts = []
 
     for item in (chat_history or [])[-6:]:
@@ -65,7 +76,11 @@ def answer_question(
         content = item.get("content", "").strip()
 
         if role in {"user", "assistant"} and content:
-            label = "Customer" if role == "user" else "ShopEase Assistant"
+            label = (
+                "Customer"
+                if role == "user"
+                else "ShopEase Assistant"
+            )
             history_parts.append(f"{label}: {content}")
 
     history_text = (
@@ -108,5 +123,3 @@ Write the answer:
         "answer": answer,
         "sources": sources,
     }
-
-
