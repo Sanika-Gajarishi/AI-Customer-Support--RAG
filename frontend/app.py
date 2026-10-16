@@ -1,6 +1,7 @@
 import os
 import requests
 import streamlit as st
+import streamlit.components.v1 as components
 
 API_BASE_URL = os.getenv("API_BASE_URL", "http://127.0.0.1:8000").rstrip("/")
 API_ROOT = f"{API_BASE_URL}/api"
@@ -48,6 +49,30 @@ def logout():
         del st.session_state[key]
     for key, value in DEFAULTS.items():
         st.session_state[key] = value
+
+
+def scroll_to_top_after_login():
+    if st.session_state.pop("scroll_to_top_on_login", False):
+        components.html(
+            """
+            <script>
+            const scrollToTop = () => {
+                const main = window.parent.document.querySelector(
+                    'section[data-testid="stMain"], section.main'
+                );
+                if (main) {
+                    main.scrollTop = 0;
+                    main.scrollTo(0, 0);
+                }
+                window.parent.scrollTo(0, 0);
+            };
+            requestAnimationFrame(scrollToTop);
+            setTimeout(scrollToTop, 150);
+            setTimeout(scrollToTop, 400);
+            </script>
+            """,
+            height=0,
+        )
 
 
 def start_new_chat():
@@ -251,6 +276,7 @@ def show_authentication():
     st.session_state.conversation_id = None
     st.session_state.messages = []
     st.session_state.auth_mode = None
+    st.session_state.scroll_to_top_on_login = True
     st.rerun()
 
 
@@ -522,3 +548,5 @@ else:
     # Customers see only the chatbot, never administration tools.
     st.session_state.pop("main_navigation", None)
     render_customer_chat()
+
+scroll_to_top_after_login()
