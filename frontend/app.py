@@ -2,6 +2,12 @@
 import requests
 import streamlit as st
 
+st.set_page_config(
+    page_title="ShopEase AI Support",
+    page_icon="💬",
+    layout="centered",
+)
+
 API_BASE_URL = "http://127.0.0.1:8000/api"
 CHAT_URL = f"{API_BASE_URL}/chat"
 FEEDBACK_URL = f"{API_BASE_URL}/feedback"
@@ -121,11 +127,7 @@ if not st.session_state.access_token:
 
     st.stop()
 
-st.set_page_config(
-    page_title="ShopEase AI Support",
-    page_icon="💬",
-    layout="centered",
-)
+
 
 st.title("💬 ShopEase AI Support")
 st.caption("Ask questions about returns, refunds, shipping, and more.")
