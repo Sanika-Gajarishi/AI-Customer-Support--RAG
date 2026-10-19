@@ -1,10 +1,6 @@
 ## 🛍️ ShopEase AI Customer Support — RAG-Based Support System
 
-The **AI Customer Support Agent** is a full-stack application designed to help customers of a fictional e-commerce company called ShopEase get quick and accurate answers to their questions about company policies, such as product returns, refunds, and other support-related issues.
-
-The application uses **Retrieval-Augmented Generation (RAG)** to answer questions using information from the company's policy documents instead of relying only on the AI model's general knowledge. First, the system searches its knowledge base for relevant information. It then provides the retrieved information to a Google Gemini model, which generates a natural-language answer based on the available context. This helps the chatbot provide answers that are more relevant to ShopEase's policies.
-
-The system also includes an **administrator dashboard** that allows authorized administrators to monitor usage statistics, upload or remove policy documents, rebuild the FAISS search index when the knowledge base changes, and manage customer support tickets by updating their status and priority.
+A full-stack customer-support application for a fictional e-commerce store, ShopEase. It combines retrieval-augmented generation (RAG) with a FastAPI backend and a Streamlit interface so customers can ask policy-related questions, review conversation history, submit feedback, and raise support tickets. Administrators can monitor system activity, manage policy documents, rebuild the retrieval index, and update tickets. 
 
 Overall, this project demonstrates how RAG, large language models, semantic search, API development, database management, authentication, and a user interface can work together to build an AI-powered customer support solution.
 
