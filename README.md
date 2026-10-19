@@ -1,8 +1,6 @@
-# ShopEase AI Customer Support — RAG-Based Support System
+# 🛍️ ShopEase AI Customer Support — RAG-Based Support System
 
 A full-stack customer-support application for a fictional e-commerce store, ShopEase. It combines retrieval-augmented generation (RAG) with a FastAPI backend and a Streamlit interface so customers can ask policy-related questions, review conversation history, submit feedback, and raise support tickets. Administrators can monitor system activity, manage policy documents, rebuild the retrieval index, and update tickets.
-
-> **Project status:** The local automated test suite has most recently reported **41 passed**. This README documents the current project structure and functionality; deployment, production load testing, and live-service reliability should be validated separately.
 
 ## Contents
 
@@ -20,8 +18,8 @@ A full-stack customer-support application for a fictional e-commerce store, Shop
 - [Testing](#testing)
 - [Knowledge-base management](#knowledge-base-management)
 - [Security notes](#security-notes)
-- [Troubleshooting](#troubleshooting)
-- [Limitations and future improvements](#limitations-and-future-improvements)
+
+---
 
 ## Features
 
@@ -349,6 +347,7 @@ python -m pip check
 $env:PYTHONPATH = "$PWD\backend"
 python -m alembic current
 ```
+---
 
 ## Knowledge-base management
 
@@ -363,6 +362,8 @@ Recommended workflow after policy content changes:
 
 Uploading or deleting a document does **not** itself rebuild the index; use the explicit rebuild action. The generated files under `backend/data/vectorstore/` are local artifacts and are ignored by Git. Regenerate them from the source documents on a fresh setup.
 
+---
+
 ## Security notes
 
 - Keep `.env`, API keys, database credentials, JWT secrets, and real customer data out of source control.
@@ -375,48 +376,24 @@ Uploading or deleting a document does **not** itself rebuild the index; use the 
 - Treat generated answers as assistive responses, and provide a route for escalation when policy information is missing or ambiguous.
 - Configure production CORS, rate limits, logging, backups, timeouts, and monitoring before public deployment.
 
-## Troubleshooting
+---
 
-### `ModuleNotFoundError: No module named 'app'`
+# 👩‍💻 Author
 
-From the project root, set the Python path and use the specified app directory:
+**Sanika Gajarishi**
 
-```powershell
-$env:PYTHONPATH = "$PWD\backend"
-python -m uvicorn app.main:app --app-dir backend --reload
-```
+Interested in:
 
-### PostgreSQL reports that the database does not exist
+- Python
+- AI / ML
+- Generative AI
+- AI Agents
+- FastAPI
+- PostgreSQL
+- React
+- TypeScript
 
-Create the database in PostgreSQL and verify the database name inside `DATABASE_URL`. Then run `python -m alembic upgrade head` with the backend path configured.
-
-### The chat endpoint fails when generating an answer
-
-Check the backend terminal for the full error, confirm the Gemini key is present in the local environment, confirm the configured model is accessible, and verify that the knowledge-base index exists. Do not share the API key in diagnostic logs or screenshots.
-
-### No relevant answers are returned
-
-Confirm that the source documents contain the information, rerun the document ingestion/index rebuild, and test retrieval using the project's evaluation utilities. A successful index build does not guarantee that every query has a relevant source.
-
-### Streamlit cannot reach the backend
-
-Make sure FastAPI is running, check the frontend's configured API URL, and verify that the health endpoint responds at http://127.0.0.1:8000/health.
-
-### Environment activation is blocked
-
-Use `\.venv\Scripts\python.exe -m pytest backend\tests -q` or the environment's Python executable directly. This avoids needing to modify your global PowerShell execution policy.
-
-## Limitations and future improvements
-
-Potential next steps before production use:
-
-- Add deployment-specific configuration, health/readiness checks, and CI automation.
-- Add rate limiting, structured audit logs, monitoring, and operational alerts.
-- Establish a repeatable benchmark set for retrieval quality and answer correctness.
-- Add integration tests against a disposable PostgreSQL database as well as isolated unit/API tests.
-- Review dependency versions regularly and plan migration away from deprecated integration imports.
-- Provide more granular permission/assignment workflows for ticket handling.
-- Document verified deployment steps and environment-specific settings once the target host is chosen.
+---
 
 ## License
 
