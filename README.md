@@ -354,7 +354,7 @@ python -m pip check
 $env:PYTHONPATH = "$PWD\backend"
 python -m alembic current
 ```
----
+
 
 ## Knowledge-base management
 
@@ -369,7 +369,7 @@ Recommended workflow after policy content changes:
 
 Uploading or deleting a document does **not** itself rebuild the index; use the explicit rebuild action. The generated files under `backend/data/vectorstore/` are local artifacts and are ignored by Git. Regenerate them from the source documents on a fresh setup.
 
----
+
 
 ## Security notes
 
