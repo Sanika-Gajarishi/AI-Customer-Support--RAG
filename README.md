@@ -387,18 +387,11 @@ Uploading or deleting a document does **not** itself rebuild the index; use the 
 
 **Sanika Gajarishi**
 
-Interested in:
+GitHub:
 
-- Python
-- AI / ML
-- Generative AI
-- AI Agents
-- FastAPI
-- PostgreSQL
-- React
-- TypeScript
+https://github.com/Sanika-Gajarishi
 
 
 ## License
 
-No license has been specified in this repository yet. Add a `LICENSE` file before presenting the project as open source under particular reuse terms.
+This project is intended for educational and demonstration purposes.
