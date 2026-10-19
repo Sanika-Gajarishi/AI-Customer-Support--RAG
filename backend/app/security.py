@@ -89,6 +89,12 @@ def get_current_user(
     if user is None:
         raise unauthorized
 
+    if not user.is_active:
+       raise HTTPException(
+        status_code=403,
+           detail="Inactive account.",
+    )
+
     return user
 
 
