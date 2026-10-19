@@ -1,6 +1,14 @@
-# 🛍️ ShopEase AI Customer Support — RAG-Based Support System
+## 🛍️ ShopEase AI Customer Support — RAG-Based Support System
 
-A full-stack customer-support application for a fictional e-commerce store, ShopEase. It combines retrieval-augmented generation (RAG) with a FastAPI backend and a Streamlit interface so customers can ask policy-related questions, review conversation history, submit feedback, and raise support tickets. Administrators can monitor system activity, manage policy documents, rebuild the retrieval index, and update tickets.
+The **AI Customer Support Agent** is a full-stack application designed to help customers of a fictional e-commerce company called ShopEase get quick and accurate answers to their questions about company policies, such as product returns, refunds, and other support-related issues.
+
+The application uses **Retrieval-Augmented Generation (RAG)** to answer questions using information from the company's policy documents instead of relying only on the AI model's general knowledge. First, the system searches its knowledge base for relevant information. It then provides the retrieved information to a Google Gemini model, which generates a natural-language answer based on the available context. This helps the chatbot provide answers that are more relevant to ShopEase's policies.
+
+The application has a **Streamlit frontend** where customers can register, log in, chat with the AI assistant, revisit previous conversations, give feedback on responses, and create support tickets when they need additional assistance. A **FastAPI backend** handles the application's business logic, authentication, database operations, document retrieval, and communication with the AI model. PostgreSQL stores application records such as users, conversations, messages, feedback, and support tickets.
+
+The system also includes an **administrator dashboard** that allows authorized administrators to monitor usage statistics, upload or remove policy documents, rebuild the FAISS search index when the knowledge base changes, and manage customer support tickets by updating their status and priority.
+
+Overall, this project demonstrates how RAG, large language models, semantic search, API development, database management, authentication, and a user interface can work together to build an AI-powered customer support solution.
 
 ## Contents
 
@@ -19,7 +27,6 @@ A full-stack customer-support application for a fictional e-commerce store, Shop
 - [Knowledge-base management](#knowledge-base-management)
 - [Security notes](#security-notes)
 
----
 
 ## Features
 
@@ -376,7 +383,7 @@ Uploading or deleting a document does **not** itself rebuild the index; use the 
 - Treat generated answers as assistive responses, and provide a route for escalation when policy information is missing or ambiguous.
 - Configure production CORS, rate limits, logging, backups, timeouts, and monitoring before public deployment.
 
----
+
 
 # 👩‍💻 Author
 
@@ -393,7 +400,6 @@ Interested in:
 - React
 - TypeScript
 
----
 
 ## License
 
