@@ -4,6 +4,7 @@ from app.api.chat import router as chat_router
 from app.api.history import router as history_router
 from app.api.auth import router as auth_router
 from app.api.admin import router as admin_router
+from app.api.tickets import router as tickets_router
 
 app = FastAPI(
     title="ShopEase AI Customer Support",
@@ -25,4 +26,9 @@ app.include_router(
     admin_router,
     prefix="/api/admin",
     tags=["Admin"],
+)
+app.include_router(
+    tickets_router,
+    prefix="/api/tickets",
+    tags=["Tickets"],
 )
