@@ -1,4 +1,3 @@
-
 from sqlalchemy import select
 
 from app.database import SessionLocal
