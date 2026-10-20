@@ -1,5 +1,4 @@
 from sqlalchemy import inspect, text
-
 from app.database import engine
 
 inspector = inspect(engine)
