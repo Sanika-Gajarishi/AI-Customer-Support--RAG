@@ -1,4 +1,3 @@
-
 from unittest.mock import MagicMock, patch
 
 from app.services.rag_service import answer_question
