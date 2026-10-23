@@ -2,7 +2,6 @@
 import logging
 from datetime import datetime, timezone
 from typing import Literal
-from uuid import uuid4
 
 from fastapi import APIRouter, Depends, HTTPException, Query
 from pydantic import BaseModel, Field
@@ -10,8 +9,15 @@ from sqlalchemy import select
 from sqlalchemy.orm import Session
 
 from app.database import get_db
-from app.models import Conversation, SupportTicket, User
+from app.models import SupportTicket, User
 from app.security import get_current_admin, get_current_user
+from app.services.ticket_service import (
+    TicketConversationNotFound,
+    TicketUserNotFound,
+    TicketValidationError,
+    create_support_ticket_record,
+)
+
 
 logger = logging.getLogger(__name__)
 
@@ -35,6 +41,8 @@ class TicketUpdate(BaseModel):
 
 
 def ticket_to_dict(ticket: SupportTicket) -> dict:
+    """Convert a support ticket to a response-friendly dictionary."""
+
     return {
         "ticket_number": ticket.ticket_number,
         "user_id": ticket.user_id,
@@ -53,6 +61,8 @@ def find_ticket(
     db: Session,
     ticket_number: str,
 ) -> SupportTicket | None:
+    """Find a ticket by its ticket number."""
+
     return db.scalar(
         select(SupportTicket).where(
             SupportTicket.ticket_number == ticket_number
@@ -66,51 +76,50 @@ def create_ticket(
     db: Session = Depends(get_db),
     current_user: User = Depends(get_current_user),
 ):
-    conversation_id = None
-
-    if request.conversation_session_id:
-        conversation = db.scalar(
-            select(Conversation).where(
-                Conversation.session_id
-                == request.conversation_session_id,
-                Conversation.user_id == current_user.id,
-            )
-        )
-
-        if conversation is None:
-            raise HTTPException(
-                status_code=404,
-                detail="Conversation not found.",
-            )
-
-        conversation_id = conversation.id
-
-    ticket = SupportTicket(
-        ticket_number=f"TKT-{uuid4().hex[:10].upper()}",
-        user_id=current_user.id,
-        conversation_id=conversation_id,
-        subject=request.subject.strip(),
-        description=request.description.strip(),
-        priority=request.priority,
-        status="open",
-    )
-
-    if not ticket.subject or not ticket.description:
-        raise HTTPException(
-            status_code=422,
-            detail="Subject and description cannot be blank.",
-        )
+    """Create a ticket for the currently authenticated customer."""
 
     try:
-        db.add(ticket)
+        # The shared service validates the data and verifies ownership.
+        # The customer ID comes from FastAPI authentication, not the client.
+        ticket = create_support_ticket_record(
+            db,
+            user_id=current_user.id,
+            subject=request.subject,
+            description=request.description,
+            priority=request.priority,
+            conversation_session_id=request.conversation_session_id,
+        )
+
         db.commit()
         db.refresh(ticket)
 
         return ticket_to_dict(ticket)
 
+    except TicketValidationError as exc:
+        db.rollback()
+        raise HTTPException(
+            status_code=422,
+            detail=str(exc),
+        ) from exc
+
+    except TicketConversationNotFound as exc:
+        db.rollback()
+        raise HTTPException(
+            status_code=404,
+            detail="Conversation not found.",
+        ) from exc
+
+    except TicketUserNotFound as exc:
+        db.rollback()
+        raise HTTPException(
+            status_code=403,
+            detail="Customer account is unavailable.",
+        ) from exc
+
     except Exception:
         db.rollback()
         logger.exception("Support ticket creation failed")
+
         raise HTTPException(
             status_code=500,
             detail="Unable to create support ticket.",
@@ -122,6 +131,8 @@ def list_my_tickets(
     db: Session = Depends(get_db),
     current_user: User = Depends(get_current_user),
 ):
+    """Return tickets belonging only to the authenticated customer."""
+
     tickets = db.scalars(
         select(SupportTicket)
         .where(SupportTicket.user_id == current_user.id)
@@ -140,6 +151,8 @@ def get_my_ticket(
     db: Session = Depends(get_db),
     current_user: User = Depends(get_current_user),
 ):
+    """Retrieve a ticket only if it belongs to the current customer."""
+
     ticket = db.scalar(
         select(SupportTicket).where(
             SupportTicket.ticket_number == ticket_number,
@@ -165,6 +178,8 @@ def list_all_tickets(
     db: Session = Depends(get_db),
     current_admin: User = Depends(get_current_admin),
 ):
+    """Allow administrators to list tickets with optional filters."""
+
     statement = select(SupportTicket)
 
     if status is not None:
@@ -197,6 +212,8 @@ def update_ticket(
     db: Session = Depends(get_db),
     current_admin: User = Depends(get_current_admin),
 ):
+    """Allow administrators to update a ticket."""
+
     ticket = find_ticket(db, ticket_number)
 
     if ticket is None:
@@ -217,10 +234,10 @@ def update_ticket(
         field in changes and changes[field] is None
         for field in ("status", "priority")
     ):
-      raise HTTPException(
-        status_code=422,
-        detail="Status and priority cannot be null.",
-    )  
+        raise HTTPException(
+            status_code=422,
+            detail="Status and priority cannot be null.",
+        )
 
     if "assigned_to_user_id" in changes:
         assignee_id = changes["assigned_to_user_id"]
@@ -231,7 +248,9 @@ def update_ticket(
             if assignee is None or not assignee.is_admin:
                 raise HTTPException(
                     status_code=400,
-                    detail="Assignee must be an existing administrator.",
+                    detail=(
+                        "Assignee must be an existing administrator."
+                    ),
                 )
 
     for field, value in changes.items():
@@ -242,11 +261,13 @@ def update_ticket(
     try:
         db.commit()
         db.refresh(ticket)
+
         return ticket_to_dict(ticket)
 
     except Exception:
         db.rollback()
         logger.exception("Support ticket update failed")
+
         raise HTTPException(
             status_code=500,
             detail="Unable to update support ticket.",
