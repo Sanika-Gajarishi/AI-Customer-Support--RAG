@@ -1,9 +1,10 @@
 
-from datetime import datetime
+from datetime import date, datetime
 
 from sqlalchemy import (
     Boolean,
     Column,
+    Date,
     DateTime,
     ForeignKey,
     Integer,
@@ -203,5 +204,132 @@ class SupportTicket(Base):
         DateTime(timezone=True),
         server_default=func.now(),
         onupdate=func.now(),
+        nullable=False,
+    )
+
+class Order(Base):
+    __tablename__ = "orders"
+
+    id: Mapped[int] = mapped_column(
+        Integer,
+        primary_key=True,
+    )
+
+    order_number: Mapped[str] = mapped_column(
+        String(40),
+        unique=True,
+        index=True,
+        nullable=False,
+    )
+
+    user_id: Mapped[int] = mapped_column(
+        ForeignKey("users.id", ondelete="CASCADE"),
+        nullable=False,
+        index=True,
+    )
+
+    status: Mapped[str] = mapped_column(
+        String(30),
+        default="processing",
+        server_default="processing",
+        nullable=False,
+        index=True,
+    )
+
+    carrier: Mapped[str | None] = mapped_column(
+        String(100),
+        nullable=True,
+    )
+
+    tracking_number: Mapped[str | None] = mapped_column(
+        String(100),
+        nullable=True,
+    )
+
+    estimated_delivery: Mapped[date | None] = mapped_column(
+        Date,
+        nullable=True,
+    )
+
+    created_at: Mapped[datetime] = mapped_column(
+        DateTime(timezone=True),
+        server_default=func.now(),
+        nullable=False,
+    )
+
+    updated_at: Mapped[datetime] = mapped_column(
+        DateTime(timezone=True),
+        server_default=func.now(),
+        onupdate=func.now(),
+        nullable=False,
+    )
+
+class PendingTicketConfirmation(Base):
+    __tablename__ = "pending_ticket_confirmations"
+
+    id: Mapped[int] = mapped_column(
+        Integer,
+        primary_key=True,
+    )
+
+    confirmation_code: Mapped[str] = mapped_column(
+        String(64),
+        unique=True,
+        index=True,
+        nullable=False,
+    )
+
+    user_id: Mapped[int] = mapped_column(
+        ForeignKey("users.id", ondelete="CASCADE"),
+        nullable=False,
+        index=True,
+    )
+
+    # Store the public session ID rather than a foreign key to
+    # conversations. The conversation may not yet be committed
+    # when the agent first prepares a ticket draft.
+    conversation_session_id: Mapped[str] = mapped_column(
+        String(100),
+        nullable=False,
+        index=True,
+    )
+
+    subject: Mapped[str] = mapped_column(
+        String(200),
+        nullable=False,
+    )
+
+    description: Mapped[str] = mapped_column(
+        Text,
+        nullable=False,
+    )
+
+    priority: Mapped[str] = mapped_column(
+        String(20),
+        default="medium",
+        server_default="medium",
+        nullable=False,
+    )
+
+    expires_at: Mapped[datetime] = mapped_column(
+        DateTime(timezone=True),
+        nullable=False,
+    )
+
+    consumed_at: Mapped[datetime | None] = mapped_column(
+        DateTime(timezone=True),
+        nullable=True,
+    )
+
+    # A confirmation can create at most one ticket.
+    ticket_id: Mapped[int | None] = mapped_column(
+        ForeignKey("support_tickets.id", ondelete="SET NULL"),
+        unique=True,
+        nullable=True,
+    )
+
+    created_at: Mapped[datetime] = mapped_column(
+        DateTime(timezone=True),
+        server_default=func.now(),
         nullable=False,
     )
