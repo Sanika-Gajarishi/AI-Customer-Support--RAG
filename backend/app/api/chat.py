@@ -10,7 +10,7 @@ from sqlalchemy.orm import Session
 from app.database import get_db
 from app.models import Conversation, Message, User
 from app.security import get_current_user
-from app.services.rag_service import answer_question
+from app.services.agent_service import answer_with_mcp_agent
 
 logger = logging.getLogger(__name__)
 
@@ -97,9 +97,11 @@ def chat(
         db.flush()
 
         # 4. Generate the answer using RAG and conversation history.
-        result = answer_question(
+        result = answer_with_mcp_agent(
             message_text,
+            user_id=current_user.id,
             chat_history=chat_history,
+            conversation_session_id=conversation.session_id,
         )
 
         # 5. Save the assistant's response.
