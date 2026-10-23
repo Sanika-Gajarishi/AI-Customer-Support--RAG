@@ -21,53 +21,117 @@ OUT_OF_SCOPE_ANSWER = (
 )
 
 
-def answer_question(
-    question: str,
-    chat_history: list[dict] | None = None,
+def search_knowledge_base(
+    query: str,
+    *,
+    enforce_threshold: bool = True,
 ) -> dict:
-    question = question.strip()
+    """
+    Search the existing ShopEase FAISS index.
 
-    if not question:
-        raise ValueError("Question cannot be empty.")
+    Returns relevant passages, their source names, and retrieval
+    distances. When enforce_threshold is True, poorly matched queries
+    return no results.
+
+    This function retrieves evidence; it does not call Gemini.
+    """
+    query = query.strip()
+
+    if not query:
+        raise ValueError("Search query cannot be empty.")
 
     embeddings = create_embeddings()
     vectorstore = load_vectorstore(embeddings)
 
     retrieved_documents = vectorstore.similarity_search_with_score(
-        question,
+        query,
         k=RETRIEVAL_TOP_K,
     )
 
-    # Reject poorly matched questions in new conversations.
-    if not chat_history:
-        if (
-            not retrieved_documents
-            or float(retrieved_documents[0][1])
-            > RETRIEVAL_DISTANCE_THRESHOLD
-        ):
-            logger.info(
-                "Question rejected by retrieval threshold."
-            )
-            return {
-                "answer": OUT_OF_SCOPE_ANSWER,
-                "sources": [],
-            }
+    if not retrieved_documents:
+        logger.info("No documents retrieved for the query.")
+        return {
+            "query": query,
+            "found": False,
+            "results": [],
+            "sources": [],
+        }
 
-    context_parts = []
+    # Retain the existing relevance threshold for new questions.
+    if (
+        enforce_threshold
+        and float(retrieved_documents[0][1])
+        > RETRIEVAL_DISTANCE_THRESHOLD
+    ):
+        logger.info("Question rejected by retrieval threshold.")
+        return {
+            "query": query,
+            "found": False,
+            "results": [],
+            "sources": [],
+        }
+
+    results = []
     sources = []
 
     for document, score in retrieved_documents:
         source = document.metadata.get("source", "Unknown source")
 
-        context_parts.append(
-            f"Source: {source}\n"
-            f"Policy content:\n{document.page_content}"
+        results.append(
+            {
+                "source": source,
+                "content": document.page_content,
+                "distance": float(score),
+            }
         )
 
         if source not in sources:
             sources.append(source)
 
+    return {
+        "query": query,
+        "found": bool(results),
+        "results": results,
+        "sources": sources,
+    }
+
+
+def answer_question(
+    question: str,
+    chat_history: list[dict] | None = None,
+) -> dict:
+    """
+    Answer a customer-support question using existing RAG retrieval
+    and Gemini answer generation.
+    """
+    question = question.strip()
+
+    if not question:
+        raise ValueError("Question cannot be empty.")
+
+    # Follow-up questions retain the existing behavior: their retrieval
+    # results are not rejected by the new-conversation threshold.
+    retrieval = search_knowledge_base(
+        question,
+        enforce_threshold=not bool(chat_history),
+    )
+
+    if not chat_history and not retrieval["found"]:
+        return {
+            "answer": OUT_OF_SCOPE_ANSWER,
+            "sources": [],
+        }
+
+    context_parts = []
+
+    for result in retrieval["results"]:
+        context_parts.append(
+            f"Source: {result['source']}\n"
+            f"Policy content:\n{result['content']}"
+        )
+
     context = "\n\n---\n\n".join(context_parts)
+    sources = retrieval["sources"]
 
     history_parts = []
 
