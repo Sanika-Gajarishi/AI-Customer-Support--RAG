@@ -484,14 +484,16 @@ def test_chat_creates_conversation_and_saves_messages(
 ):
     client, _ = test_environment
 
-    def fake_answer_question(message, chat_history=None):
+    def fake_answer_question(
+        message, user_id, chat_history=None, conversation_session_id=None
+    ):
         return {
             "answer": "You can return eligible products according to our return policy.",
             "sources": ["return_policy.pdf"],
         }
 
     monkeypatch.setattr(
-        "app.api.chat.answer_question",
+        "app.api.chat.answer_with_mcp_agent",
         fake_answer_question,
     )
 
@@ -562,8 +564,8 @@ def test_history_returns_messages_in_order(
     client, _ = test_environment
 
     monkeypatch.setattr(
-        "app.api.chat.answer_question",
-        lambda message, chat_history=None: {
+        "app.api.chat.answer_with_mcp_agent",
+        lambda message, user_id, chat_history=None, conversation_session_id=None: {
             "answer": "Please review our return policy.",
             "sources": ["return_policy.pdf"],
         },
@@ -613,8 +615,8 @@ def test_customer_can_submit_feedback_for_assistant_message(
     client, _ = test_environment
 
     monkeypatch.setattr(
-        "app.api.chat.answer_question",
-        lambda message, chat_history=None: {
+        "app.api.chat.answer_with_mcp_agent",
+        lambda message, user_id, chat_history=None, conversation_session_id=None: {
             "answer": "You can track your order from your account.",
             "sources": ["order_tracking.pdf"],
         },
