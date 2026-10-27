@@ -29,12 +29,10 @@ The project demonstrates how RAG, LLMs, MCP, semantic search, API development, a
 - [Testing](#-testing)
 - [Knowledge-Base Management](#-knowledge-base-management)
 - [Security and Reliability](#-security-and-reliability)
-- [Known Limitations and Troubleshooting](#-known-limitations-and-troubleshooting)
-- [Future Improvements](#-future-improvements)
 - [Author](#-author)
 - [License](#-license)
 
----
+
 
 ## ✨ Features
 
@@ -96,7 +94,7 @@ The project demonstrates how RAG, LLMs, MCP, semantic search, API development, a
 - Update ticket status, priority, and administrator assignment.
 - Enforce administrative authorization on the backend independently of the frontend.
 
----
+
 
 ## 🏗️ Architecture
 
@@ -178,7 +176,7 @@ The system combines a traditional application backend with an MCP-based AI agent
 
 **PostgreSQL:** Persists users, conversations, messages, feedback, orders, support tickets, and pending ticket confirmations.
 
----
+
 
 ## 🔌 How the MCP Integration Works
 
@@ -214,7 +212,7 @@ Tool selection is controlled by the agent, while business rules and data-access 
 
 The MCP server runs as a separate Python subprocess launched by the backend's MCP client. The server receives authenticated customer and conversation context from trusted application code rather than relying on values supplied by Gemini.
 
----
+
 
 ## 🧰 Available MCP Tools
 
@@ -290,7 +288,7 @@ The confirmation workflow is designed to reject invalid, expired, reused, or inc
 
 This separation keeps the ticket-creation decision within trusted application code instead of allowing an unconfirmed model-generated tool call to create a ticket directly.
 
----
+
 
 ## 🔍 How RAG Works
 
@@ -322,7 +320,7 @@ The project's previous retrieval evaluation reported:
 
 These metrics represent the evaluation set used during development. They do not guarantee that every customer question will receive a correct or complete answer.
 
----
+
 
 ## 🛠️ Technology Stack
 
@@ -350,7 +348,7 @@ These metrics represent the evaluation set used during development. They do not 
 | Testing | pytest and FastAPI testing utilities |
 | Configuration | Environment variables and a local `.env` file |
 
----
+
 
 ## 📁 Project Structure
 
@@ -423,7 +421,7 @@ RAG-Based Support System/
 
 The generated vector store is a local artifact and is ignored by Git. The source policy documents should be retained so the vector store can be generated again when needed.
 
----
+
 
 ## ✅ Prerequisites
 
@@ -438,7 +436,7 @@ Before running the application, make sure you have:
 
 The initial installation and embedding-model download may take some time because the project uses machine-learning dependencies.
 
----
+
 
 ## 🚀 Setup on Windows
 
@@ -518,7 +516,7 @@ $env:PYTHONPATH = "$PWD\backend"
 
 This allows the backend's `app` package to be imported by the application and the command-line tools in the current PowerShell session.
 
----
+
 
 ## 🗄️ Database and Migrations
 
@@ -558,7 +556,7 @@ The migrations should be applied to the intended database before exercising feat
 
 **Important:** Verify `DATABASE_URL` before applying migrations. Back up databases containing valuable data before schema changes. Do not reset a database simply to resolve a migration error.
 
----
+
 
 ## ▶️ Running the Application
 
@@ -619,7 +617,7 @@ The generated FAISS index is ignored by Git and may not exist after cloning the 
 
 Before testing RAG queries in a fresh environment, make sure the source policy documents are present and build the knowledge-base index using the application's ingestion or administrator rebuild workflow.
 
----
+
 
 ## 💬 Using the Application
 
@@ -699,7 +697,7 @@ The MCP tools are internal agent integrations rather than public HTTP endpoints.
 
 Ticket statuses supported by the API include `open`, `in_progress`, `resolved`, and `closed`. Priorities include `low`, `medium`, and `high`.
 
----
+
 
 ## 🧪 Testing
 
@@ -753,7 +751,7 @@ Review any smoke-test script before executing it independently, particularly if 
 7. Replay the same confirmation and verify that a duplicate ticket is not created.
 8. Verify that customers cannot view or modify another customer's protected records.
 
----
+
 
 ## 📚 Knowledge-Base Management
 
@@ -789,7 +787,7 @@ These are generated local artifacts and are excluded from Git. A fresh setup mus
 
 The `index.pkl` file uses Python serialization. Only load vector-store artifacts generated from trusted sources; do not replace them with untrusted files.
 
----
+
 
 ## 🔐 Security and Reliability
 
@@ -808,7 +806,6 @@ The `index.pkl` file uses Python serialization. Only load vector-store artifacts
 - Use appropriate HTTPS, logging, monitoring, rate limiting, and secret management before exposing the application to public traffic.
 - Keep test data separate from real customer data.
 
----
 
 
 ## 👩‍💻 Author
@@ -817,7 +814,7 @@ The `index.pkl` file uses Python serialization. Only load vector-store artifacts
 
 GitHub: [Sanika-Gajarishi](https://github.com/Sanika-Gajarishi)
 
----
+
 
 ## 📄 License
 
