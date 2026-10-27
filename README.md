@@ -8,7 +8,7 @@ The MCP integration allows the AI agent to interact with the existing applicatio
 
 The project demonstrates how RAG, LLMs, MCP, semantic search, API development, authentication, database management, and agentic workflows can work together to build a practical AI customer-support system.
 
----
+
 
 ## 📌 Contents
 
@@ -810,69 +810,6 @@ The `index.pkl` file uses Python serialization. Only load vector-store artifacts
 
 ---
 
-## ⚠️ Known Limitations and Troubleshooting
-
-### 1. Gemini quota exceeded
-
-An API request may fail with `429 RESOURCE_EXHAUSTED` when the configured Gemini project or model has exhausted its quota.
-
-Check the project's Gemini API usage, model availability, rate limits, and billing configuration. Generating another API key within the same project does not necessarily resolve a project-level quota limit.
-
-### 2. PostgreSQL connection failure
-
-Verify:
-
-- PostgreSQL is running.
-- The database exists.
-- `DATABASE_URL` contains the correct host, port, database name, username, and password.
-- The database user has the required permissions.
-- Pending migrations have been applied.
-
-### 3. FAISS index not found
-
-If the application reports that `index.faiss` is missing, verify that the source policy documents exist and rebuild the knowledge base before testing retrieval.
-
-### 4. Hugging Face model download problems
-
-The embedding model is downloaded from Hugging Face when needed. An initial request can fail because of network connectivity or download restrictions.
-
-Check network access and retry the operation after resolving the underlying download problem.
-
-### 5. MCP tool invocation failure
-
-Verify that:
-
-- The backend dependencies include the official Python MCP SDK.
-- The MCP server module is available in the backend Python path.
-- The MCP client is launching the server with the correct working directory.
-- The MCP server can access the configured database and RAG files.
-- The authenticated user and conversation context are passed through trusted application code.
-- Gemini has remaining quota when the test requires a model-generated tool call.
-
-A failed Gemini API request does not by itself prove that the MCP server or its tools are broken. Test MCP server communication separately when diagnosing agent failures.
-
-### 6. Ticket confirmation rejected
-
-An invalid, expired, reused, or incorrectly associated confirmation code should be rejected. Start a new ticket-confirmation workflow and confirm it within the allowed time using the same authenticated user and conversation.
-
----
-
-## 🚀 Future Improvements
-
-Potential future improvements include:
-
-- Expanded automated evaluation of retrieval quality and answer faithfulness.
-- More robust observability for tool calls, retrieval results, and model errors.
-- More extensive API-level tests for order lookup and confirmation workflows.
-- Improved handling of model quota exhaustion and other external-service failures.
-- Additional order-management tools where appropriate.
-- Improved support for multilingual customer questions.
-- More extensive performance testing and production monitoring.
-- Dependency maintenance as upstream libraries evolve.
-
-These are possible improvements, not claims that the features have already been implemented.
-
----
 
 ## 👩‍💻 Author
 
